@@ -68,9 +68,22 @@ topit::void append(const IDraw * sh, p_t ** ppts, size_t & s)
 
 }
 
-topit::f_t frame(const p_t * pts, size_t s)
+topit::f_t topit::frame(const p_t * pts, size_t s)
 {
-
+  int minx = pts[0].x;
+  int miny = pts[0].y;
+  int maxx = pts[0].x;
+  int maxy = pts[0].y;
+  for(size_t i=0; i<s; ++i)
+  {
+    minx = std::min(minx,pts[i].x);
+    miny = std::min(miny,pts[i].y);
+    maxx = std::max(maxx,pts[i].x);
+    maxy = std::max(maxy,pts[i].y);
+  }
+  p_t a{minx, miny};
+  p_t b{maxx, maxy};
+  return f_t{a, b};
 }
 
 topit::char * canvas(f_t fr, char fill)
