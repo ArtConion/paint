@@ -3,8 +3,16 @@ namespace topit {
    struct p_t{
     int x,y;
   };
-  bool operator==(p_t a, p_t b)
-  bool operator!=(p_t a, p_t b)
+  struct f_t{
+    p_t aa, bb;
+  };
+  bool operator==(p_t a, p_t b);
+  bool operator!=(p_t a, p_t b);
+  stuct IDraw {
+    virtual p_t next() const = 0;
+    virtual p_t next(p_t prev) const =  0;
+    virtual ~IDraw() = default;
+  };
 }
 int main()
 {
