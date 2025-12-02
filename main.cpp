@@ -10,18 +10,20 @@ namespace topit {
   size_t cols(f_t fr);
   bool operator==(p_t a, p_t b);
   bool operator!=(p_t a, p_t b);
-  stuct IDraw {
-    virtual p_t next() const = 0;
-    virtual p_t next(p_t prev) const =  0;
+  struct IDraw {
     virtual ~IDraw() = default;
+    virtual p_t begin() const = 0;
+    virtual p_t next(p_t prev) const =  0;
   };
-  Struct Dot:IDraw {
+  struct Dot:IDraw {
     explicit Dot(p_t dd);
     p_t begin() const override;
     p_t next(p_t prev) const override;
-    p_t d;
+    private:
+      p_t d;
   };
-  p_t * extend(const p_t * pts, size_t s, p_t fill)
+  p_t * extend(const p_t * pts, size_t s, p_t fill);
+  void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
   f_t frame(const p_t * pts, size_t s);
   char * canvas(f_t fr, char fill);
@@ -65,7 +67,7 @@ int main()
   delete shp[2];
   return err;
 }
-p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
+topit::p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
 {
   p_t * res = new p_t[s+1];
   for(size_t i=0; i<s; ++i)
@@ -76,9 +78,23 @@ p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
   return res;
 }
 
+void topit::extend(p_t ** pts, size_t & s, p_t fill)
+{
+  p_t * res = extend(*pts, s, fill);
+  delete[] *pts;
+  ++s;
+  *pts = res;
+}
+
 void topit::append(const IDraw * sh, p_t ** ppts, size_t & s)
 {
-
+  extend(ppts, s, sh->begin());
+  p_t b = sh->begin();
+  while(sh->next(b) != sh->begin())
+  {
+    b = sh->next(b);
+    extend(ppts, s, b);
+  }
 }
 
 topit::f_t topit::frame(const p_t * pts, size_t s)
@@ -99,9 +115,9 @@ topit::f_t topit::frame(const p_t * pts, size_t s)
   return f_t{a, b};
 }
 
-topit::char * canvas(f_t fr, char fill)
+char * topit::canvas(f_t fr, char fill)
 {
-  s = rows(fr) * cols(fr);
+  size_t s = rows(fr) * cols(fr);
   char * c = new char[s];
   for(size_t i=0; i<s; ++i)
   {
@@ -121,7 +137,7 @@ void topit::flush(std::ostream & os, const char * cnv, f_t fr)
 {
   for(size_t i=0; i<rows(fr); ++i)
   {
-    for(size_t j=0; j<cold(fr); ++j)
+    for(size_t j=0; j<cols(fr); ++j)
     {
       os << cnv[i * cols(fr) + j];
     }
@@ -134,7 +150,7 @@ size_t topit::rows(f_t fr)
   return (fr.bb.y-fr.aa.y+1);
 }
 
-size_t topit::cols(f_t fr);
+size_t topit::cols(f_t fr)
 {
   return (fr.bb.x-fr.aa.x+1);
 }
@@ -148,9 +164,9 @@ topit::p_t topit::Dot::begin() const
   return d;
 }
 
-topit::p_t topit::Dot::next(P_t prev) const
+topit::p_t topit::Dot::next(p_t prev) const
 {
-  if(prev!=d)
+  if (prev != d)
   {
     throw std::logic_error("bad prev");
   }
