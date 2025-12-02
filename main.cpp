@@ -22,6 +22,14 @@ namespace topit {
     private:
       p_t d;
   };
+  struct WSeg:IDraw {
+    explicit WSeg(p_t s, int l);
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    private:
+      p_t start;
+      int len;
+  };
   p_t * extend(const p_t * pts, size_t s, p_t fill);
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
@@ -35,7 +43,7 @@ int main()
 {
   using namespace topit;
   int err = 0;
-  IDraw *shp[3] = {};
+  IDraw *shp[4] = {};
   p_t * pts = nullptr;
   size_t s = 0;
   try
@@ -43,7 +51,8 @@ int main()
     shp[0] = new Dot({0,0});
     shp[1] = new Dot({2,3});
     shp[2] = new Dot({-5,-2});
-    for(size_t i=0; i<3; ++i)
+    shp[3] = new WSeg({-4,3},1);
+    for(size_t i=0; i<4; ++i)
     {
       append(shp[i], &pts, s);
     }
@@ -65,6 +74,7 @@ int main()
   delete shp[0];
   delete shp[1];
   delete shp[2];
+  delete shp[3];
   return err;
 }
 topit::p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
@@ -159,6 +169,10 @@ topit::Dot::Dot(p_t dd):
  IDraw(), d{dd}
 {}
 
+topit::WSeg::WSeg(p_t s, int l):
+ IDraw(), start{s}, len{l}
+{}
+
 topit::p_t topit::Dot::begin() const
 {
   return d;
@@ -181,4 +195,27 @@ bool topit::operator==(p_t a, p_t b)
 bool topit::operator!=(p_t a, p_t b)
 {
   return !(a==b);
+}
+
+topit::p_t topit::WSeg::begin() const
+{
+  return start;
+}
+
+topit::p_t topit::WSeg::next(p_t prev) const
+{
+  if(prev==start)
+  {
+    if(len>1)
+    {
+      return {start.x,start.y+1};
+    }
+    return start;
+  }
+  int curent_index = prev.y - start.y;
+  if(curent_index<len-1)
+  {
+    return {prev.x, prev.y+1};
+  }
+  return start;
 }
