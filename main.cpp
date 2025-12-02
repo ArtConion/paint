@@ -13,6 +13,11 @@ namespace topit {
     virtual p_t next(p_t prev) const =  0;
     virtual ~IDraw() = default;
   };
+  Struct Dot:IDraw {
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    p_t d;
+  };
 }
 int main()
 {
@@ -20,10 +25,26 @@ int main()
   p_t a{1,1}, b{1,0};
   std::cout << (a==b) << '\n';
 }
+
+topit::p_t topit::Dot::begin() const
+{
+  return d;
+}
+
+topit::p_t topit::Dot::next(P_t prev) const
+{
+  if(prev!=d)
+  {
+    throw std::logic_error("bad prev");
+  }
+  return d;
+}
+
 bool topit::operator==(p_t a, p_t b)
 {
   return a.x==b.x && a.y==b.y;
 }
+
 bool topit::operator!=(p_t a, p_t b)
 {
   return !(a==b);
