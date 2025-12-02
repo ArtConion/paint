@@ -20,6 +20,10 @@ namespace topit {
     p_t d;
   };
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
+  f_t frame(const p_t * pts, size_t s);
+  char * canvas(f_t fr, char fill);
+  void paint(p_t p, char * cnv, f_t fr, char fill);
+  void flush(std::ostream & os, const char * cnv, f_t fr);
 }
 
 int main()
@@ -33,10 +37,19 @@ int main()
   {
     shp[0] = new Dot({0,0});
     shp[1] = new Dot({2,3});
+    shp[2] = new Dot({-5,-2});
     for(size_t i=0; i<3; ++i)
     {
       append(shp[i], &pts, s);
     }
+    f_t fr = frame(pts,s);
+    char * cnv = canvas(fr, '.');
+    for(size_t i=0; i<s; ++i)
+    {
+      paint(pts[i], cnv, fr, '#');
+    }
+    flush(std::cout, cnv, fr);
+    delete[] cnv;
   }
   catch(...)
   {
@@ -44,11 +57,35 @@ int main()
     err = 1;
   }
 
-
   delete shp[0];
   delete shp[1];
-
+  delete shp[2];
   return err;
+}
+
+topit::void append(const IDraw * sh, p_t ** ppts, size_t & s)
+{
+
+}
+
+topit::f_t frame(const p_t * pts, size_t s)
+{
+
+}
+
+topit::char * canvas(f_t fr, char fill)
+{
+
+}
+
+topit::void paint(p_t p, char * cnv, f_t fr, char fill)
+{
+
+}
+
+topit::void flush(std::ostream & os, const char * cnv, f_t fr)
+{
+
 }
 
 topit::Dot::Dot(p_t dd):
