@@ -65,7 +65,7 @@ int main()
   return err;
 }
 
-topit::void append(const IDraw * sh, p_t ** ppts, size_t & s)
+void topit::append(const IDraw * sh, p_t ** ppts, size_t & s)
 {
 
 }
@@ -99,14 +99,21 @@ topit::char * canvas(f_t fr, char fill)
   return c;
 }
 
-topit::void paint(p_t p, char * cnv, f_t fr, char fill)
+void topit::paint(p_t p, char * cnv, f_t fr, char fill)
 {
 
 }
 
-topit::void flush(std::ostream & os, const char * cnv, f_t fr)
+void topit::flush(std::ostream & os, const char * cnv, f_t fr)
 {
-
+  for(size_t i=0; i<rows(fr); ++i)
+  {
+    for(size_t j=0; j<cold(fr); ++j)
+    {
+      os << cnv[i * cols(fr) + j];
+    }
+    os << "\n";
+  }
 }
 
 size_t topit::rows(f_t fr)
