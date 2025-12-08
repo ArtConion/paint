@@ -30,6 +30,14 @@ namespace topit {
       p_t start;
       int len;
   };
+  struct Square:IDraw {
+    explicit Square(p_t p, int s);
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    private:
+      p_t start;
+      int side;
+  };
   p_t * extend(const p_t * pts, size_t s, p_t fill);
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
@@ -43,7 +51,7 @@ int main()
 {
   using namespace topit;
   int err = 0;
-  IDraw *shp[4] = {};
+  IDraw *shp[5] = {};
   p_t * pts = nullptr;
   size_t s = 0;
   try
@@ -52,7 +60,8 @@ int main()
     shp[1] = new Dot({2,3});
     shp[2] = new Dot({-5,-2});
     shp[3] = new WSeg({-4,3},1);
-    for(size_t i=0; i<4; ++i)
+    shp[4] = new Square({1,0},4);
+    for(size_t i=0; i<5; ++i)
     {
       append(shp[i], &pts, s);
     }
@@ -165,12 +174,20 @@ size_t topit::cols(f_t fr)
   return (fr.bb.x-fr.aa.x+1);
 }
 
+bool topit::operator==(p_t a, p_t b)
+{
+  return a.x==b.x && a.y==b.y;
+}
+
+bool topit::operator!=(p_t a, p_t b)
+{
+  return !(a==b);
+}
+
+// Точка
+
 topit::Dot::Dot(p_t dd):
  IDraw(), d{dd}
-{}
-
-topit::WSeg::WSeg(p_t s, int l):
- IDraw(), start{s}, len{l}
 {}
 
 topit::p_t topit::Dot::begin() const
@@ -187,15 +204,11 @@ topit::p_t topit::Dot::next(p_t prev) const
   return d;
 }
 
-bool topit::operator==(p_t a, p_t b)
-{
-  return a.x==b.x && a.y==b.y;
-}
+// Вертикальная линия
 
-bool topit::operator!=(p_t a, p_t b)
-{
-  return !(a==b);
-}
+topit::WSeg::WSeg(p_t s, int l):
+ IDraw(), start{s}, len{l}
+{}
 
 topit::p_t topit::WSeg::begin() const
 {
@@ -218,4 +231,41 @@ topit::p_t topit::WSeg::next(p_t prev) const
     return {prev.x, prev.y+1};
   }
   return start;
+}
+
+// Квадрат
+
+topit::Square::Square(p_t p, int s):
+ IDraw(), start{p}, side{s}
+{
+  if(side <= 0)
+  {
+    throw std::invalid_argument("Invalid square side ");
+  }
+}
+
+topit::p_t topit::Square::begin() const
+{
+  return start;
+}
+
+topit::p_t topit::Square::next(p_t prev) const
+{
+  if (prev.x < start.x || prev.x >= start.x + side || prev.y < start.y || prev.y >= start.y + side)
+  {
+    throw std::logic_error("bad prev in Square: point outside square");
+  }
+
+  if (prev.x == start.x + side - 1 && prev.y == start.y + side - 1)
+  {
+    return start;
+  }
+
+  if (prev.x < start.x + side - 1)
+  {
+    return p_t{prev.x + 1, prev.y};
+  } else
+  {
+    return p_t{start.x, prev.y + 1};
+  }
 }
