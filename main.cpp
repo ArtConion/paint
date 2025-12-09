@@ -276,3 +276,21 @@ topit::p_t topit::Square::next(p_t prev) const
     return p_t{start.x, prev.y + 1};
   }
 }
+
+// Прямоугольник
+
+    topit::Rect::Rect(p_t pos, int w, int h);
+     Idraw(), rect{pos, {pos.x+w, pos.y+h}}
+    {
+      if(!(w>0 && h>0))
+      {
+        throw std::logic_erroe("bad rect");
+      }
+    }
+
+    Rect(p_t a, p_t b)
+     Rect(a, b.x-a.x, b.y-a.y)
+    {}
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    f_t rect;
