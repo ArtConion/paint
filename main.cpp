@@ -67,6 +67,7 @@ int main()
   using namespace topit;
   int err = 0;
   IDraw *shp[6] = {};
+  size_t sizes[6] = {};
   p_t * pts = nullptr;
   size_t s = 0;
   try
@@ -75,19 +76,24 @@ int main()
     shp[1] = new Dot({10,10});
     shp[2] = new Dot({-1,1});
     shp[3] = new WSeg({-3,2},2);
-    //shp[4] = new Dot({-1,-1});
-    //shp[5] = new Dot({1,1});
     shp[4] = new FRect({-2,2},2,2);
     shp[5] = new Rect({-1, -1},2,3);
     for(size_t i=0; i<6; ++i)
     {
       append(shp[i], &pts, s);
+      sizes[i] = s;
     }
     f_t fr = frame(pts,s);
     char * cnv = canvas(fr, '.');
-    for(size_t i=0; i<s; ++i)
+    const char * brush = "#0@&&^";
+    for(size_t i=0; i<6; ++i)
     {
-      paint(pts[i], cnv, fr, '#');
+      size_t start = !i ? 0: sizes[i-1];
+      size_t end = sizes[i];
+      for(size_t k=0; k<end; ++k)
+      {
+        paint(pts[k], cnv, fr, brush[i]);
+      }
     }
     flush(std::cout, cnv, fr);
     delete[] cnv;
