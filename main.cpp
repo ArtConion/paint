@@ -43,7 +43,8 @@ namespace topit {
     Rect(p_t a, p_t b);
     p_t begin() const override;
     p_t next(p_t prev) const override;
-    f_t rect;
+    private:
+     f_t rect;
   };
   p_t * extend(const p_t * pts, size_t s, p_t fill);
   void extend(p_t ** pts, size_t & s, p_t fill);
@@ -58,7 +59,7 @@ int main()
 {
   using namespace topit;
   int err = 0;
-  IDraw *shp[5] = {};
+  IDraw *shp[6] = {};
   p_t * pts = nullptr;
   size_t s = 0;
   try
@@ -68,7 +69,8 @@ int main()
     shp[2] = new Dot({-1,1});
     shp[3] = new WSeg({-3,2},2);
     shp[4] = new Square({-2,2},4);
-    for(size_t i=0; i<5; ++i)
+    shp[5] = new Rect({-4, -4},2,3);
+    for(size_t i=0; i<6; ++i)
     {
       append(shp[i], &pts, s);
     }
@@ -91,6 +93,8 @@ int main()
   delete shp[1];
   delete shp[2];
   delete shp[3];
+  delete shp[4];
+  delete shp[5];
   return err;
 }
 topit::p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
@@ -279,18 +283,40 @@ topit::p_t topit::Square::next(p_t prev) const
 
 // Прямоугольник
 
-    topit::Rect::Rect(p_t pos, int w, int h);
-     Idraw(), rect{pos, {pos.x+w, pos.y+h}}
+topit::Rect::Rect(p_t pos, int w, int h):
+ IDraw(), rect{pos, {pos.x+w, pos.y+h}}
     {
       if(!(w>0 && h>0))
       {
-        throw std::logic_erroe("bad rect");
-      }
+        throw std::logic_error("bad rect");
     }
+}
 
-    Rect(p_t a, p_t b)
-     Rect(a, b.x-a.x, b.y-a.y)
-    {}
-    p_t begin() const override;
-    p_t next(p_t prev) const override;
-    f_t rect;
+topit::Rect::Rect(p_t a, p_t b):
+ Rect(a, b.x-a.x, b.y-a.y)
+{}
+
+topit::p_t topit::Rect::begin() const
+{
+  return rect.aa;
+}
+topit::p_t topit::Rect::next(p_t prev) const
+{
+  if(prev.x == rect.aa.x && prev.y < rect.bb.y)
+  {
+    return {prev.x, prev.y+1};
+  }
+  else if(prev.y == rect.bb.y && prev.x < rect.bb.x)
+  {
+    return {prev.x+1, prev.y+1};
+  }
+  else if (prev.x == rect.bb.x && prev.y >rect.aa.y)
+  {
+    return {prev.x, prev.y-1};
+  }
+  else if(prev.y == rect.aa.y && prev.x > rect.aa.x)
+  {
+    return {prev.x-1, prev.y};
+  }
+  throw std::logic_error("bad prev");
+}
