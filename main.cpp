@@ -46,6 +46,13 @@ namespace topit {
     private:
      f_t rect;
   };
+  struct FRect:IDraw {
+    FRect(p_t pos, int w, int h);
+    FRect(p_t a, p_t b);
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    f_t frect;
+  };
   p_t * extend(const p_t * pts, size_t s, p_t fill);
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
@@ -68,8 +75,10 @@ int main()
     shp[1] = new Dot({10,10});
     shp[2] = new Dot({-1,1});
     shp[3] = new WSeg({-3,2},2);
-    shp[4] = new Square({-2,2},4);
-    shp[5] = new Rect({-4, -4},2,3);
+    //shp[4] = new Dot({-1,-1});
+    //shp[5] = new Dot({1,1});
+    shp[4] = new FRect({-2,2},2,2);
+    shp[5] = new Rect({-1, -1},2,3);
     for(size_t i=0; i<6; ++i)
     {
       append(shp[i], &pts, s);
@@ -285,11 +294,11 @@ topit::p_t topit::Square::next(p_t prev) const
 
 topit::Rect::Rect(p_t pos, int w, int h):
  IDraw(), rect{pos, {pos.x+w, pos.y+h}}
-    {
-      if(!(w>0 && h>0))
-      {
-        throw std::logic_error("bad rect");
-    }
+{
+  if(!(w>0 && h>0))
+  {
+    throw std::logic_error("bad rect");
+  }
 }
 
 topit::Rect::Rect(p_t a, p_t b):
@@ -308,7 +317,7 @@ topit::p_t topit::Rect::next(p_t prev) const
   }
   else if(prev.y == rect.bb.y && prev.x < rect.bb.x)
   {
-    return {prev.x+1, prev.y+1};
+    return {prev.x+1, prev.y};
   }
   else if (prev.x == rect.bb.x && prev.y >rect.aa.y)
   {
@@ -317,6 +326,42 @@ topit::p_t topit::Rect::next(p_t prev) const
   else if(prev.y == rect.aa.y && prev.x > rect.aa.x)
   {
     return {prev.x-1, prev.y};
+  }
+  throw std::logic_error("bad prev");
+}
+
+// Заполненный прямоугольник
+
+topit::FRect::FRect(p_t pos, int w, int h):
+ IDraw(), frect{pos, {pos.x+w,pos.y+h}}
+{
+  if(!(w>0 && h>0))
+  {
+    throw std::logic_error("bad frect");
+  }
+}
+topit::FRect::FRect(p_t a, p_t b):
+ FRect(a, b.x-a.x, b.y-a.y)
+{}
+
+topit::p_t topit::FRect::begin() const
+{
+  return frect.aa;
+}
+
+topit::p_t topit::FRect::next(p_t prev) const
+{
+  if(prev.x < frect.bb.x)
+  {
+    return {prev.x+1, prev.y};
+  }
+  else if(prev.x == frect.bb.x && prev.y < frect.bb.y)
+  {
+    return {frect.aa.x, prev.y+1};
+  }
+  else if(prev == frect.bb)
+  {
+    return frect.aa;
   }
   throw std::logic_error("bad prev");
 }
