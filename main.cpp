@@ -57,6 +57,8 @@ namespace topit {
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
   f_t frame(const p_t * pts, size_t s);
+  struct Layers;
+  f_t frame(const Layers& ls);
   char * canvas(f_t fr, char fill);
   void paint(p_t p, char * cnv, f_t fr, char fill);
   void flush(std::ostream & os, const char * cnv, f_t fr);
@@ -64,14 +66,15 @@ namespace topit {
   struct Layers {
     Layers();
     ~Layers();
-    Layers(const& Layers) = delete;
-    Layers& opertor=(const &Layers) = delete;
+    Layers(const Layers&) = delete;
+    Layers& operator=(const Layers&) = delete;
     Layers(Layers&&) = delete;
     Layers& operator=(Layers&&) = delete;
     void append(const IDraw & dr);
     size_t points() const;
     size_t layers() const;
-    size_t layer(size_t i) const;
+    size_t start(size_t i) const;
+    size_t end(size_t i) const;
     p_t point(size_t i) const;
     private:
       size_t points_;
@@ -85,33 +88,28 @@ int main()
 {
   using namespace topit;
   int err = 0;
-  IDraw *shp[6] = {};
-  size_t sizes[6] = {};
-  p_t * pts = nullptr;
-  size_t s = 0;
+  IDraw *shp[3] = {};
+  Layers layers;
   try
   {
     shp[0] = new Dot({-5,-5});
     shp[1] = new Dot({10,10});
     shp[2] = new Dot({-1,1});
-    shp[3] = new WSeg({-3,2},2);
-    shp[4] = new FRect({-2,2},2,2);
-    shp[5] = new Rect({-1, -1},2,3);
+
     for(size_t i=0; i<6; ++i)
     {
-      append(shp[i], &pts, s);
-      sizes[i] = s;
+      layers.append(*(shp[i]));
     }
-    f_t fr = frame(pts,s);
+    f_t fr = frame(layers);
     char * cnv = canvas(fr, '.');
-    const char * brush = "#0@&&^";
-    for(size_t i=0; i<6; ++i)
+    const char * brush = "#*%";
+    for(size_t k=0; k<layers.layers(); ++k)
     {
-      size_t start = !i ? 0: sizes[i-1];
-      size_t end = sizes[i];
-      for(size_t k=0; k<end; ++k)
+      size_t start = layers.start(k);
+      size_t end = layers.end(k);
+      for(size_t i=start; k<end; ++i)
       {
-        paint(pts[k], cnv, fr, brush[i]);
+        paint(layers.point(i), cnv, fr, brush[k]);
       }
     }
     flush(std::cout, cnv, fr);
@@ -228,6 +226,40 @@ bool topit::operator!=(p_t a, p_t b)
 {
   return !(a==b);
 }
+
+topit::Layers::Layers():
+ points_{0}, pts_{nullptr}, layers_{0}, sizes_{nullptr}
+{}
+
+topit::Layers::~Layers()
+{
+  delete[] pts_;
+  delete[] sizes_;
+}
+
+void topit::Layers::append(const IDraw & dr)
+{
+  size_t *ext_sizes = new size_t[layers_+1];
+  try
+  {
+    topit::append(&dr, &pts_, points_);
+  }
+  catch(...)
+  {
+    delete[] ext_sizes;
+    throw;
+  }
+  for(size_t i=0;i<layers_; ++i)
+  {
+    ext_sizes[i]=sizes_[i];
+  }
+  ext_sizes[layers_]=points_;
+  delete[] sizes_;
+  sizes_= ext_sizes;
+  ++layers_;
+}
+
+
 
 // Точка
 
