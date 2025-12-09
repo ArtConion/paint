@@ -38,6 +38,13 @@ namespace topit {
       p_t start;
       int side;
   };
+  struct Rect:IDraw {
+    Rect(p_t pos, int w, int h);
+    Rect(p_t a, p_t b);
+    p_t begin() const override;
+    p_t next(p_t prev) const override;
+    f_t rect;
+  };
   p_t * extend(const p_t * pts, size_t s, p_t fill);
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
@@ -56,11 +63,11 @@ int main()
   size_t s = 0;
   try
   {
-    shp[0] = new Dot({0,0});
-    shp[1] = new Dot({2,3});
-    shp[2] = new Dot({-5,-2});
-    shp[3] = new WSeg({-4,3},1);
-    shp[4] = new Square({1,0},4);
+    shp[0] = new Dot({-5,-5});
+    shp[1] = new Dot({10,10});
+    shp[2] = new Dot({-1,1});
+    shp[3] = new WSeg({-3,2},2);
+    shp[4] = new Square({-2,2},4);
     for(size_t i=0; i<5; ++i)
     {
       append(shp[i], &pts, s);
@@ -240,7 +247,7 @@ topit::Square::Square(p_t p, int s):
 {
   if(side <= 0)
   {
-    throw std::invalid_argument("Invalid square side ");
+    throw std::invalid_argument("Invalid square side");
   }
 }
 
@@ -253,7 +260,7 @@ topit::p_t topit::Square::next(p_t prev) const
 {
   if (prev.x < start.x || prev.x >= start.x + side || prev.y < start.y || prev.y >= start.y + side)
   {
-    throw std::logic_error("bad prev in Square: point outside square");
+    throw std::logic_error("bad prev");
   }
 
   if (prev.x == start.x + side - 1 && prev.y == start.y + side - 1)
