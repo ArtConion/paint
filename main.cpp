@@ -57,8 +57,6 @@ namespace topit {
   void extend(p_t ** pts, size_t & s, p_t fill);
   void append(const IDraw * sh, p_t ** ppts, size_t & s);
   f_t frame(const p_t * pts, size_t s);
-  struct Layers;
-  f_t frame(const Layers& ls);
   char * canvas(f_t fr, char fill);
   void paint(p_t p, char * cnv, f_t fr, char fill);
   void flush(std::ostream & os, const char * cnv, f_t fr);
@@ -66,16 +64,36 @@ namespace topit {
   struct Layers {
     Layers();
     ~Layers();
-    Layers(const Layers&) = delete;
-    Layers& operator=(const Layers&) = delete;
-    Layers(Layers&&) = delete;
-    Layers& operator=(Layers&&) = delete;
+    Layers(const Layers& other);
+    Layers& operator=(const Layers& other);
+    Layers(Layers&& other);
+    Layers& operator=(Layers&& other);
+
     void append(const IDraw & dr);
-    size_t points() const;
-    size_t layers() const;
-    size_t start(size_t i) const;
-    size_t end(size_t i) const;
-    p_t point(size_t i) const;
+    f_t frame() const
+    {
+      return topit::frame(pts_, points_);
+    }
+    size_t points() const
+    {
+      return points_;
+    }
+    size_t layers() const
+    {
+      return layers_;
+    }
+    size_t start(size_t i) const
+    {
+      return !i ? 0 : sizes_[i-1];
+    }
+    size_t end(size_t i) const
+    {
+      return sizes_[i];
+    }
+    p_t point(size_t i) const
+    {
+      return pts_[i];
+    }
     private:
       size_t points_;
       p_t * pts_;
@@ -100,7 +118,7 @@ int main()
     {
       layers.append(*(shp[i]));
     }
-    f_t fr = frame(layers);
+    f_t fr = layers.frame();
     char * cnv = canvas(fr, '.');
     const char * brush = "#*%";
     for(size_t k=0; k<layers.layers(); ++k)
@@ -259,8 +277,91 @@ void topit::Layers::append(const IDraw & dr)
   ++layers_;
 }
 
+topit::Layers::Layers(const Layers& other):
+  points_{other.points_},
+  pts_{nullptr},
+  layers_{other.layers_},
+  sizes_{nullptr}
+{
+  if (points_ > 0) {
+    pts_ = new p_t[points_];
+    for (size_t i = 0; i < points_; ++i) {
+      pts_[i] = other.pts_[i];
+    }
+  }
+  if (layers_ > 0) {
+    sizes_ = new size_t[layers_];
+    for (size_t i = 0; i < layers_; ++i) {
+      sizes_[i] = other.sizes_[i];
+    }
+  }
+}
 
+topit::Layers& topit::Layers::operator=(const Layers& other)
+{
+  if (this == &other) {
+    return *this;
+  }
+  p_t* newPts = nullptr;
+  size_t* newSizes = nullptr;
 
+  if (other.points_ > 0) {
+    newPts = new p_t[other.points_];
+    for (size_t i = 0; i < other.points_; ++i) {
+      newPts[i] = other.pts_[i];
+    }
+  }
+  if (other.layers_ > 0) {
+    newSizes = new size_t[other.layers_];
+    for (size_t i = 0; i < other.layers_; ++i) {
+      newSizes[i] = other.sizes_[i];
+    }
+  }
+
+  delete [] pts_;
+  delete [] sizes_;
+
+  pts_ = newPts;
+  sizes_ = newSizes;
+  points_ = other.points_;
+  layers_ = other.layers_;
+
+  return *this;
+}
+
+topit::Layers::Layers(Layers&& other):
+  points_{other.points_},
+  pts_{other.pts_},
+  layers_{other.layers_},
+  sizes_{other.sizes_}
+{
+  other.points_ = 0;
+  other.layers_ = 0;
+  other.pts_ = nullptr;
+  other.sizes_ = nullptr;
+}
+
+topit::Layers& topit::Layers::operator=(Layers&& other)
+{
+  if (this == &other) {
+    return *this;
+  }
+  p_t* newPts = nullptr;
+  size_t* newSizes = nullptr;
+
+  if (other.points_ > 0) {
+    newPts = new p_t[other.points_];
+    for (size_t i = 0; i < other.points_; ++i) {
+      newPts[i] = other.pts_[i];
+    }
+  }
+  if (other.layers_ > 0) {
+    newSizes = new size_t[other.layers_];
+    for (size_t i = 0; i < other.layers_; ++i) {
+      newSizes[i] = other.sizes_[i];
+    }
+  }
+}
 // Точка
 
 topit::Dot::Dot(p_t dd):
