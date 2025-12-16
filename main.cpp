@@ -283,15 +283,19 @@ topit::Layers::Layers(const Layers& other):
   layers_{other.layers_},
   sizes_{nullptr}
 {
-  if (points_ > 0) {
+  if (points_ > 0)
+  {
     pts_ = new p_t[points_];
-    for (size_t i = 0; i < points_; ++i) {
+    for (size_t i = 0; i < points_; ++i)
+    {
       pts_[i] = other.pts_[i];
     }
   }
-  if (layers_ > 0) {
+  if (layers_ > 0)
+  {
     sizes_ = new size_t[layers_];
-    for (size_t i = 0; i < layers_; ++i) {
+    for (size_t i = 0; i < layers_; ++i)
+    {
       sizes_[i] = other.sizes_[i];
     }
   }
@@ -299,7 +303,8 @@ topit::Layers::Layers(const Layers& other):
 
 topit::Layers& topit::Layers::operator=(const Layers& other)
 {
-  if (this == &other) {
+  if (this == &other)
+  {
     return *this;
   }
   p_t* newPts = nullptr;
@@ -307,13 +312,16 @@ topit::Layers& topit::Layers::operator=(const Layers& other)
 
   if (other.points_ > 0) {
     newPts = new p_t[other.points_];
-    for (size_t i = 0; i < other.points_; ++i) {
+    for (size_t i = 0; i < other.points_; ++i)
+    {
       newPts[i] = other.pts_[i];
     }
   }
-  if (other.layers_ > 0) {
+  if (other.layers_ > 0)
+  {
     newSizes = new size_t[other.layers_];
-    for (size_t i = 0; i < other.layers_; ++i) {
+    for (size_t i = 0; i < other.layers_; ++i)
+    {
       newSizes[i] = other.sizes_[i];
     }
   }
@@ -346,21 +354,21 @@ topit::Layers& topit::Layers::operator=(Layers&& other)
   if (this == &other) {
     return *this;
   }
-  p_t* newPts = nullptr;
-  size_t* newSizes = nullptr;
 
-  if (other.points_ > 0) {
-    newPts = new p_t[other.points_];
-    for (size_t i = 0; i < other.points_; ++i) {
-      newPts[i] = other.pts_[i];
-    }
-  }
-  if (other.layers_ > 0) {
-    newSizes = new size_t[other.layers_];
-    for (size_t i = 0; i < other.layers_; ++i) {
-      newSizes[i] = other.sizes_[i];
-    }
-  }
+  delete [] pts_;
+  delete [] sizes_;
+
+  pts_ = other.pts_;
+  sizes_ = other.sizes_;
+  points_ = other.points_;
+  layers_ = other.layers_;
+
+  other.pts_ = nullptr;
+  other.sizes_ = nullptr;
+  other.points_ = 0;
+  other.layers_ = 0;
+
+  return *this;
 }
 // Точка
 
