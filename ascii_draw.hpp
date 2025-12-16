@@ -6,4 +6,6 @@
 #include "rect.hpp"
 #include "frect.hpp"
 #include "canvas.hpp"
+#include "wseg.hpp"
+#include "square.hpp"
 #endif

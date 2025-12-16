@@ -1,27 +1,24 @@
 #include "idraw.hpp"
-namespace topit
+namespace
 {
-  p_t * extend(const p_t * pts, size_t s, p_t fill);
-  void extend(p_t ** pts, size_t & s, p_t fill);
-}
-
-topit::p_t * topit::extend(const p_t * pts, size_t s, p_t fill)
-{
-  p_t * res = new p_t[s+1];
-  for(size_t i=0; i<s; ++i)
+  topit::p_t * extend(const topit::p_t * pts, size_t s, topit::p_t fill)
   {
-    res[i] = pts[i];
+    topit::p_t * res = new topit::p_t[s+1];
+    for(size_t i=0; i<s; ++i)
+    {
+      res[i] = pts[i];
+    }
+    res[s] = fill;
+    return res;
   }
-  res[s] = fill;
-  return res;
-}
 
-void topit::extend(p_t ** pts, size_t & s, p_t fill)
-{
-  p_t * res = extend(*pts, s, fill);
-  delete[] *pts;
-  ++s;
-  *pts = res;
+  void extend(topit::p_t ** pts, size_t & s, topit::p_t fill)
+  {
+    topit::p_t * res = extend(*pts, s, fill);
+    delete[] *pts;
+    ++s;
+    *pts = res;
+  }
 }
 
 void topit::append(const IDraw * sh, p_t ** ppts, size_t & s)
